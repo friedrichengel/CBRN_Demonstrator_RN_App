@@ -4,7 +4,7 @@
             "outputFile": "de.thw.cbrn.strahler.app-mergeDebugResources-45:/values-v21/values-v21.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\fried\\.gradle\\caches\\8.13\\transforms\\0daeb17de12c077611c1d4efff760daf\\transformed\\core-1.13.1\\res\\values-v21\\values-v21.xml",
+                    "source": "C:\\Users\\fried\\.gradle\\caches\\9.4.1\\transforms\\87bbe73f55c7360e0f93a39d1a1b9a98\\transformed\\core-1.13.1\\res\\values-v21\\values-v21.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,13",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4",
