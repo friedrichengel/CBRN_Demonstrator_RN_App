@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#FFD400</color>
+    <string name="app_name">Strahler Konfig</string>
+    <style name="Theme.StrahlerKonfigurator" parent="android:Theme.Material.Light.NoActionBar"/>
+</resources>

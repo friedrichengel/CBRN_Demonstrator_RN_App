@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "de.thw.cbrn.strahler.app-mergeDebugResources-45:/values-v30/values-v30.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\fried\\.gradle\\caches\\8.13\\transforms\\93566af56a919597b3da967ba6cdaaf0\\transformed\\material3-release\\res\\values-v30\\values-v30.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "72",
+                        "endOffsets": "123"
+                    }
+                }
+            ]
+        }
+    ]
+}
