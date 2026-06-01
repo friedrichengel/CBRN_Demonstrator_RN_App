@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Radiation trefoil, drawn inside the adaptive-icon safe zone (center 54,54). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Three 60°-wide blades centred at up (-90°), lower-right (30°), lower-left (150°),
+         radius 44 from the centre. Sweep flag 1 makes the arc bulge outward. -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M54,54 L32,15.9 A44,44 0 0,1 76,15.9 Z" />
+    <path
+        android:fillColor="#111111"
+        android:pathData="M54,54 L92.1,76 A44,44 0 0,1 70.1,92.1 Z" />
+    <path
+        android:fillColor="#111111"
+        android:pathData="M54,54 L37.9,92.1 A44,44 0 0,1 15.9,76 Z" />
+    <!-- Centre hub -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M54,54 m-9,0 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0" />
+</vector>

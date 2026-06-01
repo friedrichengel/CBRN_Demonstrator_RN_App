@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base theme; the actual look is driven by Compose (see ui/theme).
+         A Material3 DayNight parent keeps the splash/system surfaces consistent. -->
+    <style name="Theme.StrahlerKonfigurator" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
