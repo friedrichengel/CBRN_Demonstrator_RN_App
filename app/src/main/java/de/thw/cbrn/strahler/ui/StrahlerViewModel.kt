@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import de.thw.cbrn.strahler.ble.BleManager
 import de.thw.cbrn.strahler.ble.ConnectionState
 import de.thw.cbrn.strahler.ble.DiscoveredDevice
+import de.thw.cbrn.strahler.measure.MeasurementEngine
+import de.thw.cbrn.strahler.measure.MeasurementState
 import de.thw.cbrn.strahler.model.Einheit
 import de.thw.cbrn.strahler.model.Nuklid
 import de.thw.cbrn.strahler.model.StrahlerConfig
@@ -17,12 +19,17 @@ import kotlinx.coroutines.flow.StateFlow
 class StrahlerViewModel(app: Application) : AndroidViewModel(app) {
 
     private val ble = BleManager(app.applicationContext)
+    private val measurement = MeasurementEngine(app.applicationContext)
 
     val scanning: StateFlow<Boolean> = ble.scanning
     val devices: StateFlow<List<DiscoveredDevice>> = ble.devices
     val connection: StateFlow<ConnectionState> = ble.connection
     val config: StateFlow<StrahlerConfig?> = ble.config
     val status: StateFlow<String?> = ble.status
+
+    // Geiger-style measurement (passive scan).
+    val measurementState: StateFlow<MeasurementState> = measurement.state
+    val audioEnabled: StateFlow<Boolean> = measurement.audioEnabled
 
     fun isBluetoothEnabled() = ble.isBluetoothEnabled()
     fun consumeStatus() = ble.consumeStatus()
@@ -31,6 +38,10 @@ class StrahlerViewModel(app: Application) : AndroidViewModel(app) {
     fun stopScan() = ble.stopScan()
     fun connect(device: DiscoveredDevice) = ble.connect(device)
     fun disconnect() = ble.disconnect()
+
+    fun startMeasuring() = measurement.start()
+    fun stopMeasuring() = measurement.stop()
+    fun setAudioEnabled(enabled: Boolean) = measurement.setAudioEnabled(enabled)
 
     // ---- Edits: update local config, then write the single changed value ----
 
@@ -76,5 +87,6 @@ class StrahlerViewModel(app: Application) : AndroidViewModel(app) {
     override fun onCleared() {
         super.onCleared()
         ble.disconnect()
+        measurement.release()
     }
 }

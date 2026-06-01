@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
 
     implementation(libs.accompanist.permissions)
+    implementation(libs.kotlinx.coroutines.android)
 
     debugImplementation(libs.androidx.ui.tooling)
 }

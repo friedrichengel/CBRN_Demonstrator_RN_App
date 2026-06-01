@@ -5,8 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -15,7 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -36,11 +44,14 @@ private val blePermissions: List<String> =
         listOf(android.Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
+private enum class Tab { Measure, Configure }
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun StrahlerApp(viewModel: StrahlerViewModel = viewModel()) {
     val snackbarHostState = remember { SnackbarHostState() }
     val status by viewModel.status.collectAsState()
+    var tab by remember { mutableStateOf(Tab.Measure) }
 
     LaunchedEffect(status) {
         status?.let {
@@ -49,12 +60,31 @@ fun StrahlerApp(viewModel: StrahlerViewModel = viewModel()) {
         }
     }
 
+    val permissions = rememberMultiplePermissionsState(blePermissions)
+    val granted = permissions.allPermissionsGranted
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            if (granted) {
+                NavigationBar {
+                    NavigationBarItem(
+                        selected = tab == Tab.Measure,
+                        onClick = { tab = Tab.Measure },
+                        icon = { Icon(Icons.Filled.Sensors, contentDescription = null) },
+                        label = { Text("Messen") },
+                    )
+                    NavigationBarItem(
+                        selected = tab == Tab.Configure,
+                        onClick = { tab = Tab.Configure },
+                        icon = { Icon(Icons.Filled.Tune, contentDescription = null) },
+                        label = { Text("Einrichten") },
+                    )
+                }
+            }
+        },
     ) { padding ->
-        val permissions = rememberMultiplePermissionsState(blePermissions)
-
-        if (!permissions.allPermissionsGranted) {
+        if (!granted) {
             PermissionGate(
                 modifier = Modifier
                     .fillMaxSize()
@@ -64,19 +94,28 @@ fun StrahlerApp(viewModel: StrahlerViewModel = viewModel()) {
             return@Scaffold
         }
 
-        val connection by viewModel.connection.collectAsState()
-        when (connection) {
-            is ConnectionState.Ready -> ConfigScreen(
+        when (tab) {
+            Tab.Measure -> GeigerScreen(
                 viewModel = viewModel,
-                deviceName = (connection as ConnectionState.Ready).deviceName,
                 modifier = Modifier.padding(padding),
             )
 
-            else -> ScanScreen(
-                viewModel = viewModel,
-                connection = connection,
-                modifier = Modifier.padding(padding),
-            )
+            Tab.Configure -> {
+                val connection by viewModel.connection.collectAsState()
+                if (connection is ConnectionState.Ready) {
+                    ConfigScreen(
+                        viewModel = viewModel,
+                        deviceName = (connection as ConnectionState.Ready).deviceName,
+                        modifier = Modifier.padding(padding),
+                    )
+                } else {
+                    ScanScreen(
+                        viewModel = viewModel,
+                        connection = connection,
+                        modifier = Modifier.padding(padding),
+                    )
+                }
+            }
         }
     }
 }
@@ -95,7 +134,7 @@ private fun PermissionGate(modifier: Modifier = Modifier, onRequest: () -> Unit)
         )
         Text(
             text = "Die App benötigt die Bluetooth-Berechtigung, um Strahler-Geräte " +
-                "zu finden und über GATT zu konfigurieren.",
+                "zu finden, zu messen und über GATT zu konfigurieren.",
             textAlign = TextAlign.Center,
         )
         Button(onClick = onRequest) { Text("Berechtigung erteilen") }
