@@ -14,21 +14,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Troubleshoot
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -75,6 +85,8 @@ fun GeigerScreen(viewModel: StrahlerViewModel, modifier: Modifier = Modifier) {
 
     val state by viewModel.measurementState.collectAsState()
     val audioEnabled by viewModel.audioEnabled.collectAsState()
+    val diagEnabled by viewModel.diagEnabled.collectAsState()
+    var showPinDialog by remember { mutableStateOf(false) }
 
     val range = DoseModel.autoRange(state.doseUsvh, state.best?.maxDoseUsvh ?: 1.0)
     val calibratingOnly = state.best == null && state.calibratingCount > 0
@@ -83,6 +95,20 @@ fun GeigerScreen(viewModel: StrahlerViewModel, modifier: Modifier = Modifier) {
         TopAppBar(
             title = { Text("Messen", style = MaterialTheme.typography.titleLarge) },
             actions = {
+                // Diagnose-Schalter: Freischalten nur per PIN (wie Sonden-Firmware),
+                // Abschalten jederzeit. Beim App-Neustart wieder aus.
+                IconButton(
+                    onClick = {
+                        if (diagEnabled) viewModel.disableDiag() else showPinDialog = true
+                    },
+                ) {
+                    Icon(
+                        Icons.Filled.Troubleshoot,
+                        contentDescription =
+                            if (diagEnabled) "Diagnose aus" else "Diagnose freischalten",
+                        tint = if (diagEnabled) ZoneYellow else Color.White,
+                    )
+                }
                 IconButton(onClick = { viewModel.setAudioEnabled(!audioEnabled) }) {
                     Icon(
                         if (audioEnabled) Icons.Filled.VolumeUp
@@ -135,11 +161,76 @@ fun GeigerScreen(viewModel: StrahlerViewModel, modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
-            Spacer(Modifier.height(16.dp))
+            // Betriebsfehler-Hinweis (kein Diagnose-Inhalt): ohne Bluetooth misst
+            // die App nichts und saehe sonst wie eingefroren aus.
+            if (!state.running) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Messung inaktiv (Bluetooth aus?)",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
-            InfoPanel(state)
+            // Quellen-Diagnose (Anzahl, Name, Nuklid, RSSI) nur im Diagnose-Modus -
+            // im Realbetrieb verraet sie die Simulationsmechanik.
+            if (diagEnabled) {
+                Spacer(Modifier.height(16.dp))
+                InfoPanel(state)
+            }
         }
     }
+
+    if (showPinDialog) {
+        PinDialog(
+            onDismiss = { showPinDialog = false },
+            onConfirm = { pin ->
+                val ok = viewModel.tryUnlockDiag(pin)
+                if (ok) showPinDialog = false
+                ok
+            },
+        )
+    }
+}
+
+/** 4-digit PIN prompt guarding the diagnostics panel (PIN identical to the Sonde firmware). */
+@Composable
+private fun PinDialog(onDismiss: () -> Unit, onConfirm: (String) -> Boolean) {
+    var pin by remember { mutableStateOf("") }
+    var wrong by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Diagnose – PIN eingeben") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = pin,
+                    onValueChange = { v ->
+                        pin = v.filter(Char::isDigit).take(4)
+                        wrong = false
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                    visualTransformation = PasswordVisualTransformation(),
+                    isError = wrong,
+                    supportingText = { if (wrong) Text("PIN falsch") },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (!onConfirm(pin)) {
+                        wrong = true
+                        pin = ""
+                    }
+                },
+            ) { Text("OK") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Abbrechen") }
+        },
+    )
 }
 
 @Composable

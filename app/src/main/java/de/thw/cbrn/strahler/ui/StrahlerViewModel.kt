@@ -10,7 +10,9 @@ import de.thw.cbrn.strahler.measure.MeasurementState
 import de.thw.cbrn.strahler.model.Einheit
 import de.thw.cbrn.strahler.model.Nuklid
 import de.thw.cbrn.strahler.model.StrahlerConfig
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Bridges the [BleManager] to the Compose UI. All edits are applied optimistically to the
@@ -42,6 +44,24 @@ class StrahlerViewModel(app: Application) : AndroidViewModel(app) {
     fun startMeasuring() = measurement.start()
     fun stopMeasuring() = measurement.stop()
     fun setAudioEnabled(enabled: Boolean) = measurement.setAudioEnabled(enabled)
+
+    // ---- Diagnose-Modus (wie Sonden-Firmware): Quellen-Infos auf dem Mess-Screen
+    // verraten die Simulationsmechanik und sind deshalb per Default versteckt.
+    // Laufzeit-Flag, bewusst nicht persistiert -> nach jedem App-Start wieder aus.
+
+    private val _diagEnabled = MutableStateFlow(false)
+    val diagEnabled: StateFlow<Boolean> = _diagEnabled.asStateFlow()
+
+    /** Unlocks the diagnostics panel until the app is restarted. Returns false on wrong PIN. */
+    fun tryUnlockDiag(pin: String): Boolean {
+        val ok = pin == DIAG_PIN
+        if (ok) _diagEnabled.value = true
+        return ok
+    }
+
+    fun disableDiag() {
+        _diagEnabled.value = false
+    }
 
     // ---- Edits: update local config, then write the single changed value ----
 
@@ -88,5 +108,10 @@ class StrahlerViewModel(app: Application) : AndroidViewModel(app) {
         super.onCleared()
         ble.disconnect()
         measurement.release()
+    }
+
+    companion object {
+        /** Same PIN as the Sonde firmware (config.h DIAG_PIN). */
+        private const val DIAG_PIN = "2506"
     }
 }

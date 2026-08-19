@@ -9,7 +9,7 @@ package de.thw.cbrn.strahler.model
  *  - Einheit indices are 0-based (matches mfg-data byte 7 and characteristic 0x2B05).
  */
 
-/** Nuclide table — index in [id] matches the firmware Nuklid enum (1..8). */
+/** Nuclide table — index in [id] matches the firmware Nuklid enum (1..9). */
 enum class Nuklid(val id: Int, val displayName: String) {
     CS_137(1, "Cs-137"),
     CO_60(2, "Co-60"),
@@ -18,7 +18,8 @@ enum class Nuklid(val id: Int, val displayName: String) {
     RA_226(5, "Ra-226"),
     TH_232(6, "Th-232"),
     U_238(7, "U-238"),
-    PU_239(8, "Pu-239");
+    PU_239(8, "Pu-239"),
+    SE_75(9, "Se-75");
 
     companion object {
         fun fromId(id: Int): Nuklid = entries.firstOrNull { it.id == id } ?: CS_137

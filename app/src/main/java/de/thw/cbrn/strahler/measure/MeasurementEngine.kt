@@ -41,8 +41,9 @@ data class MeasurementState(
 
 /**
  * Turns the phone into a passive Sonde: continuously scans for Strahler advertising packets,
- * tracks each source's RSSI with the same two-stage smoothing + peak model as the firmware,
- * computes the dominant source's dose, and drives Geiger click audio.
+ * tracks each source's RSSI with the same two-stage smoothing (per-second median → moving
+ * average) + peak model as the firmware, computes the dominant source's dose, and drives
+ * Geiger click audio.
  *
  * Caller must hold scan permission before [start]. Source state is shared between the (main-
  * thread) scan callback and the tick coroutine, so all access is guarded by [lock].
@@ -83,7 +84,7 @@ class MeasurementEngine(appContext: Context) {
         var valid: Boolean = false
         var lastSeen: Long = 0
 
-        var binSum: Double = 0.0
+        val binSamples = IntArray(DoseModel.RSSI_BIN_MAX_SAMPLES)
         var binCount: Int = 0
         var binStartMs: Long = 0
         val secBuf = DoubleArray(DoseModel.RSSI_AVG_SECS)
@@ -91,6 +92,14 @@ class MeasurementEngine(appContext: Context) {
         var secBufCount: Int = 0
         var rssiSmooth: Double = 0.0
         var rssiPeak: Double = 0.0
+    }
+
+    /** Median of the first [n] samples — mirrors the firmware's medianOf() in ble.cpp. */
+    private fun medianOf(v: IntArray, n: Int): Double {
+        val tmp = v.copyOf(n)
+        tmp.sort()
+        return if (n % 2 == 1) tmp[n / 2].toDouble()
+        else (tmp[n / 2 - 1] + tmp[n / 2]) / 2.0
     }
 
     private val scanCallback = object : ScanCallback() {
@@ -127,7 +136,6 @@ class MeasurementEngine(appContext: Context) {
                     // Timeout recovery: reset smoothing, KEEP peak so the gauge doesn't
                     // jump to full scale on re-detection (delta_db = 0).
                     it.valid = true
-                    it.binSum = 0.0
                     it.binCount = 0
                     it.binStartMs = now
                     it.secBufIdx = 0
@@ -144,21 +152,23 @@ class MeasurementEngine(appContext: Context) {
             s.txPower = packet.txPower
             s.lastSeen = now
 
-            // Stage 1: accumulate into the current 1-second bin.
-            s.binSum += rssi
-            s.binCount += 1
+            // Stage 1: collect the sample into the current 1-second bin (buffer full →
+            // drop the rest of the second, the median barely changes).
+            if (s.binCount < DoseModel.RSSI_BIN_MAX_SAMPLES) {
+                s.binSamples[s.binCount] = rssi
+                s.binCount += 1
+            }
 
-            // Stage 2: bin complete → push mean into ring buffer, recompute moving average.
+            // Stage 2: bin complete → push bin MEDIAN into ring buffer (robust against
+            // single outliers from reflection/shadowing), recompute moving average.
             if (now - s.binStartMs >= DoseModel.RSSI_BIN_MS && s.binCount > 0) {
-                val binMean = s.binSum / s.binCount
-                s.secBuf[s.secBufIdx] = binMean
+                s.secBuf[s.secBufIdx] = medianOf(s.binSamples, s.binCount)
                 s.secBufIdx = (s.secBufIdx + 1) % DoseModel.RSSI_AVG_SECS
                 if (s.secBufCount < DoseModel.RSSI_AVG_SECS) s.secBufCount++
                 var sum = 0.0
                 for (i in 0 until s.secBufCount) sum += s.secBuf[i]
                 s.rssiSmooth = sum / s.secBufCount
                 if (s.rssiSmooth > s.rssiPeak) s.rssiPeak = s.rssiSmooth
-                s.binSum = 0.0
                 s.binCount = 0
                 s.binStartMs = now
             }

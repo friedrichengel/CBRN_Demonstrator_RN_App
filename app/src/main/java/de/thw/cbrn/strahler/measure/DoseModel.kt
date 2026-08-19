@@ -14,7 +14,7 @@ import kotlin.math.pow
  *
  *   payload[0] = protocol version (must be 0x02)   (firmware md[2])
  *   payload[1] = sender number                     (firmware md[3])
- *   payload[2] = nuklid id (1..8)                  (firmware md[4])
+ *   payload[2] = nuklid id (1..9)                  (firmware md[4])
  *   payload[3..4] = max dose, BIG-endian uint16    (firmware md[5..6])
  *   payload[5] = unit index (0..3)                 (firmware md[7])
  *   payload[6] = tx power, signed int8 (dBm)       (firmware md[8])
@@ -29,6 +29,7 @@ object DoseModel {
     const val DOSE_PATH_LOSS_N = 12.0
     const val RSSI_BIN_MS = 1000L
     const val RSSI_AVG_SECS = 3
+    const val RSSI_BIN_MAX_SAMPLES = 16
     const val SOURCE_TIMEOUT_MS = 5000L
     const val MAX_SOURCES = 16
 
