@@ -1,7 +1,12 @@
 # Handbuch — CBRN-RN Strahler Konfigurator (Android-App)
 
 **Mess- und Einrichtungs-App für den CBRN-RN-Demonstrator**
-THW OV Berlin Friedrichshain-Kreuzberg
+Privates Projekt, eingesetzt in der Ausbildung im THW OV Berlin
+Friedrichshain-Kreuzberg
+
+> **Hinweis:** Dies ist ein **privates Projekt** und **kein offizielles
+> Produkt oder Ausbildungsmittel des THW**. Quellcode und Lizenz (MIT):
+> <https://github.com/friedrichengel/CBRN_Demonstrator_RN_App>
 
 ---
 
@@ -357,4 +362,4 @@ an Übungsteilnehmer weitergegeben werden.
 
 ---
 
-*Handbuch zur Android-App „CBRN-RN Strahler Konfigurator" · THW OV Berlin Friedrichshain-Kreuzberg*
+*Handbuch zur Android-App „CBRN-RN Strahler Konfigurator" · privates Projekt, kein offizielles THW-Produkt · MIT-Lizenz*

@@ -10,3 +10,11 @@ build/
 local.properties
 *.apk
 *.aab
+
+# Signing material - never commit
+*.jks
+*.keystore
+keystore.properties
+
+# Kotlin / Gradle caches
+.kotlin/

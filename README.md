@@ -1,12 +1,36 @@
 # CBRN-RN Strahler Konfigurator (Android)
 
+[![Android Build](https://github.com/friedrichengel/CBRN_Demonstrator_RN_App/actions/workflows/android.yml/badge.svg)](https://github.com/friedrichengel/CBRN_Demonstrator_RN_App/actions/workflows/android.yml)
+[![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue.svg)](LICENSE)
+
 Android-App zum Auffinden und Konfigurieren der **Strahler**-Geräte
-(Firmware: `CBRN_Demonstrator_RN_Probe`) über **BLE/GATT** — als handytaugliche
-Alternative zur Bedienung über den Geräteknopf.
+(Firmware: [CBRN_Demonstrator_RN_Probe](https://github.com/friedrichengel/CBRN_Demonstrator_RN_Probe))
+über **BLE/GATT** — als handytaugliche Alternative zur Bedienung über den
+Geräteknopf.
+
+> **Haftungsausschluss / Einordnung**
+>
+> - Dies ist ein **privates Hobby-Projekt** und **kein offizielles Produkt des
+>   THW** (Bundesanstalt Technisches Hilfswerk) oder eines Ortsverbands. Es wird
+>   lediglich im Rahmen der Ausbildung verwendet.
+> - Die App **misst keine Strahlung und erzeugt keine**. Die angezeigte
+>   „Dosisleistung" ist eine RSSI-basierte Näherung aus der Bluetooth-Signalstärke
+>   der Trainings-Strahler. Sie ist ein **Ausbildungsmittel, kein Dosimeter**
+>   und darf niemals für reale Messungen oder Lagebeurteilungen verwendet werden.
+> - Die Software wird **ohne jede Gewährleistung** bereitgestellt (siehe
+>   [LICENSE](LICENSE)).
+
+## Zugehörige Projekte
+
+| Repository | Inhalt |
+|---|---|
+| [CBRN_Demonstrator_RN_Probe](https://github.com/friedrichengel/CBRN_Demonstrator_RN_Probe) | Firmware der **Strahler** (Trainings-Quellen, BLE-Peripheral mit GATT-Dienst) |
+| [CBRN_Demonstrator_RN_Sonde](https://github.com/friedrichengel/CBRN_Demonstrator_RN_Sonde) | Firmware der **Sonde** (Messgerät-Nachbildung, Referenz für das Dosis-Modell) |
+| CBRN_Demonstrator_RN_App (dieses Repo) | Android-App: Messen wie die Sonde + Konfigurieren der Strahler |
 
 Die App hat zwei Bereiche (Tabs unten):
 
-- **Messen** — das Handy verhält sich wie die **Sonde** (RN_Sonde): es empfängt
+- **Messen** — das Handy verhält sich wie die **Sonde** ([CBRN_Demonstrator_RN_Sonde](https://github.com/friedrichengel/CBRN_Demonstrator_RN_Sonde)): es empfängt
   passiv die Advertising-Pakete der Strahler, berechnet aus der Signalstärke eine
   Näherungs-Dosisleistung und zeigt sie als Geigerzähler-Rundinstrument inkl.
   Klick-Geräuschen an.
@@ -83,6 +107,14 @@ Alternativ per Kommandozeile (SDK + JDK vorausgesetzt):
 ```
 
 Die APK liegt danach unter `app/build/outputs/apk/debug/`.
+
+### Fertige APK
+
+Jeder Push auf `main` baut per GitHub Actions eine Debug-APK (siehe Reiter
+**Actions** → Workflow-Artefakt). Für Versions-Tags (`v*`) wird die APK
+zusätzlich an das [GitHub-Release](https://github.com/friedrichengel/CBRN_Demonstrator_RN_App/releases)
+angehängt. Zum Installieren muss auf dem Telefon „Installation aus unbekannten
+Quellen" erlaubt sein.
 
 ## Bedienung
 
@@ -161,3 +193,21 @@ app/src/main/java/de/thw/cbrn/strahler/
 - Die im **Messen**-Tab angezeigte Dosisleistung ist eine RSSI-basierte
   **Näherung für Ausbildungszwecke** (kein kalibriertes Dosimeter) und hängt von
   Telefon-Antenne, Abschattung und Umgebung ab.
+
+## Sicherheit
+
+Hinweise zu bewusst akzeptierten Eigenschaften (offener GATT-Dienst, Diagnose-PIN
+im Quelltext) und zur Meldung von Problemen stehen in [SECURITY.md](SECURITY.md).
+
+## Mitwirken
+
+Issues und Pull Requests sind willkommen. Bitte vor größeren Änderungen kurz ein
+Issue eröffnen. Beiträge werden unter der MIT-Lizenz des Projekts aufgenommen.
+
+## Lizenz
+
+Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
+Copyright (c) 2026 Friedrich Engel.
+
+„THW" ist ein Kennzeichen der Bundesanstalt Technisches Hilfswerk; dieses
+Projekt steht in keiner offiziellen Verbindung dazu.
